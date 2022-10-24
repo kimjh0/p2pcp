@@ -54,7 +54,7 @@ jobs:
 
       - name: docker test
         run: |
-          docker run --name test --network ${{ job.container.network }} \
+          /usr/bin/docker run --name test --network ${{ job.container.network }} \
               --user ${{ needs.docker_user.outputs.uid }}:${{ needs.docker_user.outputs.gid }} \
               -v ${{ github.workspace }}:/var/lib/test123 \
               -i --rm alpine:3.14 \
