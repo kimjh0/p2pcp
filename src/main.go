@@ -78,7 +78,7 @@ var (
 	flagSeedIdleTimeout           = flag.Duration("seed-idle-timeout", 0*time.Minute, "Timeout before closing the HTTP server when no requests are received. Set to 0 to disable.")
 	flagAvailableListSyncInterval = flag.Duration("sync-interval", 2000*time.Millisecond, "Interval to synchronize available file chunks between peers.")
 )
- 
+
 // Custom grouped usage matching README groups and order
 func printGroupedUsage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
