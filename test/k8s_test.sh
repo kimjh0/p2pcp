@@ -14,8 +14,6 @@ KIND="${BASE_DIR}/test/kind"
 KUBECTL="${BASE_DIR}/test/kubectl"
 KUBECONFIG="${BASE_DIR}/test/kind.kubeconfig"
 CLUSTER_NAME="p2pcp-test"
-# Must match the init container image in test/k8s/p2pcp-seeder.yaml.
-TEST_DATA_IMAGE="busybox:1.37"
 
 #######################################
 # Download kind if not present
@@ -126,8 +124,6 @@ docker build -t p2pcp-image:k8s-test "$BASE_DIR" || die "Failed to build Docker 
 
 info "Loading image to kind cluster..."
 "$KIND" load docker-image p2pcp-image:k8s-test --name "$CLUSTER_NAME" || die "Failed to load image to kind"
-docker pull "$TEST_DATA_IMAGE" || die "Failed to pull ${TEST_DATA_IMAGE}"
-"$KIND" load docker-image "$TEST_DATA_IMAGE" --name "$CLUSTER_NAME" || die "Failed to load ${TEST_DATA_IMAGE} to kind"
 
 info "Applying k8s manifests..."
 "$KUBECTL" --kubeconfig "$KUBECONFIG" apply -f "${BASE_DIR}/test/k8s/p2pcp-namespace.yaml" || die "Failed to apply namespace"
