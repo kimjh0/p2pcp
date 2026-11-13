@@ -35,16 +35,17 @@ $(TARGET): $(SRC) Makefile
 dynamic: $(SRC) Makefile
 	$(GO_BUILD) -o ../$(TARGET) -ldflags '$(LDFLAGS)'
 
+# PLATFORM takes one platform only; the classic image store cannot load a multi-platform image.
 image:
-	$(CONTAINER_ENGINE) build --build-arg BUILD_VERSION=$(BUILD_VERSION) -t $(TARGET):latest .
+	$(CONTAINER_ENGINE) build $(if $(PLATFORM),--platform $(PLATFORM)) --build-arg BUILD_VERSION=$(BUILD_VERSION) -t $(TARGET):latest .
+
+print-version:
+	@echo $(MAJOR_VERSION).$(MINOR_VERSION).$(PATCH_VERSION)
 
 GO_LICENSES_VERSION = v1.6.0
 
 _notice:
-	@cd src && $(GO) run github.com/google/go-licenses@$(GO_LICENSES_VERSION) report ./... \
-		--ignore github.com/naver/p2pcp \
-		--template ../scripts/notice.tpl \
-		> ../$(OUTPUT) 2>/dev/null
+	@GO="$(GO)" GO_LICENSES_VERSION=$(GO_LICENSES_VERSION) scripts/gen-notice.sh > $(OUTPUT)
 
 notice:
 	@$(MAKE) _notice OUTPUT=NOTICE
@@ -57,6 +58,8 @@ notice-check:
 		 diff -u NOTICE NOTICE.tmp; \
 		 rm -f NOTICE.tmp; exit 1)
 	@rm -f NOTICE.tmp
+	@[ "$$(grep -om1 'sha256:[0-9a-f]\{64\}' Dockerfile)" = "$$(grep -om1 'sha256:[0-9a-f]\{64\}' NOTICE)" ] || \
+		(echo "Base image digest in NOTICE does not match Dockerfile."; exit 1)
 
 fmt:
 	cd src && $(GO) fmt ./...
@@ -112,4 +115,4 @@ clean:
 	rm -rf test_src test_dst || true
 	rm -f src/coverage.md || true
 
-.PHONY: dynamic image fmt fmt-check test e2e e2e-local e2e-peer e2e-command e2e-k8s clean
+.PHONY: dynamic image print-version fmt fmt-check test e2e e2e-local e2e-peer e2e-command e2e-k8s clean

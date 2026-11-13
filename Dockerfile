@@ -1,7 +1,7 @@
 # =============================================================================
 # Build stage
 # =============================================================================
-FROM golang:1.24-alpine AS builder
+FROM golang:1.27-alpine AS builder
 RUN apk add --no-cache build-base make
 WORKDIR /workspace
 COPY Makefile VERSION ./
@@ -12,7 +12,7 @@ RUN make BUILD_VERSION=${BUILD_VERSION} BUILD_TAGS=netgo,osusergo,musl
 # =============================================================================
 # Runtime stage
 # =============================================================================
-FROM alpine:3.21
+FROM alpine:3.21@sha256:48b0309ca019d89d40f670aa1bc06e426dc0931948452e8491e3d65087abc07d
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /workspace/p2pcp /usr/bin/
 COPY LICENSE NOTICE /usr/share/doc/p2pcp/

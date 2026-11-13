@@ -1,5 +1,7 @@
 # p2pcp
 
+[![Website](https://img.shields.io/badge/site-naver.github.io%2Fp2pcp-38bdf8?style=flat-square)](https://naver.github.io/p2pcp/)
+
 High-performance P2P file replication and distribution tool. Distribute a single data source to many nodes concurrently, efficiently, and reliably.
 
 ## Features
@@ -178,7 +180,16 @@ Specify this endpoint URL in `-peer-list-url` and p2pcp will periodically poll t
 ```bash
 make            # static binary (default)
 make dynamic    # dynamic binary (for environments requiring system NSS/DNS)
+make image      # container image p2pcp:latest for the host platform
 ```
+
+### Container image
+Releases are published to GitHub Container Registry for `linux/amd64` and `linux/arm64`. `latest` points to the newest non-prerelease version.
+```bash
+docker pull ghcr.io/naver/p2pcp:<version>
+docker run --rm ghcr.io/naver/p2pcp:<version> -version
+```
+The entrypoint is `p2pcp` and the image has no bash, so pass options as container arguments (`args` in Kubernetes) instead of wrapping them in `bash -c`.
 
 ## Troubleshooting
 - Dynamic discovery options are mutually exclusive: use only one of `-peer-list-url`/`-peer-list-srv`/`-peer-list-a`.
