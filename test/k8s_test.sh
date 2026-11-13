@@ -14,6 +14,8 @@ KIND="${BASE_DIR}/test/kind"
 KUBECTL="${BASE_DIR}/test/kubectl"
 KUBECONFIG="${BASE_DIR}/test/kind.kubeconfig"
 CLUSTER_NAME="p2pcp-test"
+# Must match the init container image in test/k8s/p2pcp-seeder.yaml.
+TEST_DATA_IMAGE="busybox:1.37"
 
 #######################################
 # Download kind if not present
@@ -61,14 +63,13 @@ ensure_kubectl() {
 run_and_verify() {
     local pod_name="$1"
     shift
-    local p2pcp_args="$*"
 
     if ! "$KUBECTL" --kubeconfig "$KUBECONFIG" run -i "$pod_name" \
         --image=p2pcp-image:k8s-test \
         --image-pull-policy=IfNotPresent \
         --restart=Never \
         --namespace=p2pcp \
-        --command -- bash -c "/usr/bin/p2pcp ${p2pcp_args}"; then
+        --command -- /usr/bin/p2pcp "$@"; then
         warn "kubectl run failed for ${pod_name}"
         "$KUBECTL" --kubeconfig "$KUBECONFIG" delete pod "$pod_name" -n p2pcp 2>/dev/null || true
         return 1
@@ -125,6 +126,8 @@ docker build -t p2pcp-image:k8s-test "$BASE_DIR" || die "Failed to build Docker 
 
 info "Loading image to kind cluster..."
 "$KIND" load docker-image p2pcp-image:k8s-test --name "$CLUSTER_NAME" || die "Failed to load image to kind"
+docker pull "$TEST_DATA_IMAGE" || die "Failed to pull ${TEST_DATA_IMAGE}"
+"$KIND" load docker-image "$TEST_DATA_IMAGE" --name "$CLUSTER_NAME" || die "Failed to load ${TEST_DATA_IMAGE} to kind"
 
 info "Applying k8s manifests..."
 "$KUBECTL" --kubeconfig "$KUBECONFIG" apply -f "${BASE_DIR}/test/k8s/p2pcp-namespace.yaml" || die "Failed to apply namespace"
